@@ -4,6 +4,11 @@ namespace Xvp;
 
 class Pagecache
 {
+    const EXPIRED_HOUR  = 3600;
+    const EXPIRED_DAY   = 86400;
+    const EXPIRED_WEEK  = 604800;
+    const EXPIRED_MONTH = 2592000;
+
 	/**
 	 * Is cache enabled?
 	 * @var boolean
