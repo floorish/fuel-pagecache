@@ -93,7 +93,7 @@ class Pagecache
      * @return boolean
      */
     public function isCacheable()
-    {
+    {        
         if ($this->_response->status == 200 && $this->_cache_enabled && count($_GET) == 0 && count($_POST) == 0)
         {
             return true;
@@ -183,19 +183,23 @@ class Pagecache
     }
     
     /**
-     * Cleans the whole cache
+     * Cleans the whole cache.
+     * If $expired is passed, the file modification time will be checked against $expired.
+     * If "file modification time" + $expired < "actual time" --> file will be removed
+     * @param integer|boolean $expired
      */
-    public function cleanup()
+    public function cleanup($expired = false)
     {
-        $this->_cleanup($this->_cache_dir);
+        $this->_cleanup($this->_cache_dir, $expired);
     }
     
     /**
      * Deletes files and directories recursively
      * @param string $directory
+     * @param integer|boolean $expired 
      * @return  boolean
      */
-    protected function _cleanup($directory)
+    protected function _cleanup($directory, $expired = false)
     {        
         // Always check since we could accidentally delete root
         if ($directory == '/')
@@ -223,12 +227,27 @@ class Pagecache
             { 
                 $path = $directory.'/'.$contents;                
     
+                // if it's a folder, remove contents and try to remove folder at the end.
+                // otherwise, remove the index file
                 if (is_dir($path))
                 { 
                     self::_cleanup($path);                                         
-                }                
-                
-                @unlink($path);                 
+                    @rmdir($path);     
+                } 
+                else 
+                {        
+                    if ($expired) 
+                    {                        
+                        if(filemtime($path) + $expired > time()) 
+                        {
+                            @unlink($path);                                   
+                        }
+                    }
+                    else 
+                    {
+                        @unlink($path);
+                    }                
+                }
             } 
         }
     

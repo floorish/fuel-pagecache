@@ -7,19 +7,20 @@ This is a port of Lysender's kohana module
 https://github.com/lysender/pagecache
 
 How to
-======
+------
 
 1. Enable the package in your fuel instance
 
 2. Create a 'cache' folder in your docroot
 
-3. In your Controller_Template insert the following code (marked with ***)
+3. This is how Controller_Template should look like
 
     public function before()
     {
-        *** $this->pagecache = new Pagecache();
-        *** $this->pagecache->setResponse($this->response);
-        *** $this->pagecache->setRequest($this->request);
+        // let pagecache available to all controllers
+        $this->pagecache = new Pagecache();
+        $this->pagecache->setResponse($this->response);
+        $this->pagecache->setRequest($this->request);
 
 
         if ($this->auto_render === true)
@@ -35,9 +36,10 @@ How to
             $response = $this->response;
             $response->body = $this->template;
 
-            *** if ($this->pagecache->isCacheable()) {
-            ***    $this->pagecache->cache($_SERVER['REQUEST_URI']);
-            *** }
+            // this snippet will do all the work
+            if ($this->pagecache->isCacheable()) {
+               $this->pagecache->cache($_SERVER['REQUEST_URI']);
+            }
         }
 
         return $response;
