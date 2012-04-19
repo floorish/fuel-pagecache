@@ -40,6 +40,12 @@ class Pagecache
 	 */
     protected $_write_output_status = false;
 
+    public function __construct()
+    {
+        // @todo move to config
+        $this->_cache_dir = DOCROOT.'cache';
+    }
+
     /**
      * Set the response object
      * @param \Response $response
@@ -101,7 +107,7 @@ class Pagecache
      */
     public function cache($uri)
     {
-        $base = DOCROOT.'cache';
+        $base = $this->_cache_dir;
 
         // try to create the base cache dir
         if (!is_dir($base))
@@ -166,4 +172,77 @@ class Pagecache
             chmod($file, 0777);
         }
     }
+    
+    /**
+     * Deletes home cache
+     */
+    public function cleanupHome()
+    {
+        $path  = $this->_cache_dir.'/index.html';
+        @unlink($path);
+    }
+    
+    /**
+     * Cleans the whole cache
+     */
+    public function cleanup($directory = '')
+    {
+        $path = $this->_cache_dir;
+        
+        if($directory != '') {
+            $path .= '/' . $directory;
+        }
+
+        // Only delete files, not the cache dir
+        return $this->_cleanup($path);
+    }
+    
+    /**
+     * Deletes files and directories recursively
+     * @param string $directory
+     * @return  boolean
+     */
+    protected function _cleanup($directory)
+    {
+        // Always check since we could accidentally delete root
+        if ($directory == '/')
+        {
+            return FALSE;
+        }
+        
+        // Remove trailing slash
+        if (substr($directory, -1) == '/')
+        { 
+            $directory = substr($directory, 0, -1);
+        } 
+        
+        if (!is_dir($directory) || !is_readable($directory))
+        { 
+            return FALSE;
+        }
+        
+        $directory_handle = opendir($directory);
+    
+        while ($contents = readdir($directory_handle))
+        {
+            // Do not include directories starting with dot (.)
+            if (strpos($contents, '.') !== 0)
+            { 
+                $path = $directory.'/'.$contents;
+    
+                if (is_dir($path))
+                { 
+                    self::_delete_all($path); 
+                }
+                else
+                {
+                    unlink($path);
+                } 
+            } 
+        }
+    
+        closedir($directory_handle);
+    
+        return TRUE;
+    }    
 }
