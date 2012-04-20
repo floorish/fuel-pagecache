@@ -47,8 +47,8 @@ class Pagecache
 
     public function __construct()
     {
-        // @todo move to config
-        $this->_cache_dir = DOCROOT.'cache';
+        \Config::load('fuel-pagecache', true);
+        $this->_cache_dir = \Config::get('fuel-pagecache.cache_dir');
     }
 
     /**
@@ -205,14 +205,12 @@ class Pagecache
      * @return  boolean
      */
     protected function _cleanup($directory, $expired = false)
-    {        
-        // Always check since we could accidentally delete root
+    {   
         if ($directory == '/')
         {
             return;
         }
         
-        // Remove trailing slash
         if (substr($directory, -1) == '/')
         { 
             $directory = substr($directory, 0, -1);
@@ -258,4 +256,52 @@ class Pagecache
     
         closedir($directory_handle);
     }    
+
+    public function getStats()
+    {
+        $directory = $this->_cache_dir;
+
+        $file_count = 0;
+
+        $this->_getStats($directory, $file_count);
+
+        return $file_count;
+    }
+
+    protected function _getStats($directory, &$file_count)
+    {   
+        if (substr($directory, -1) == '/')
+        { 
+            $directory = substr($directory, 0, -1);
+        } 
+        
+        if (!is_dir($directory) || !is_readable($directory))
+        { 
+            return;
+        }
+        
+        $directory_handle = opendir($directory);
+    
+        while ($contents = readdir($directory_handle))
+        {            
+            // Do not include directories starting with dot (.)
+            if (strpos($contents, '.') !== 0)
+            { 
+                $path = $directory.'/'.$contents;                
+    
+                // if it's a folder, remove contents and try to remove folder at the end.
+                // otherwise, remove the index file
+                if (is_dir($path))
+                { 
+                    self::_getStats($path, $file_count);                    
+                } 
+                else 
+                {        
+                    $file_count++;
+                }
+            } 
+        }
+    
+        closedir($directory_handle);
+    }
 }
