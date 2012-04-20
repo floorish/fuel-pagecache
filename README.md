@@ -15,31 +15,32 @@ How to
 
 3. Add this code to the Controller_Template 'before' function:
 
+``` php
     $this->pagecache = new Pagecache();
     $this->pagecache->setResponse($this->response);
     $this->pagecache->setRequest($this->request);
+```
 
 4. Add this code to the Controller_Template 'after' function:
    (inside auto_render snippet)
-    
+
+``` php    
     if ($this->pagecache->isCacheable()) {
        $this->pagecache->cache($_SERVER['REQUEST_URI']);
     }
+```
     
 5. Enable cache in your controller
 
 	$this->_pagecache->enableCache();
 
-6. Add to your .htaccess the following code
+6. Update your .htaccess to have the following code
 
-    # BEGIN Page cache
-
+```
     RewriteRule ^/(.*)/$ /$1 [QSA]
     RewriteRule ^$ cache/index.html [QSA]
     RewriteRule ^([^.]+)/$ cache/$1/index.html [QSA]
     RewriteRule ^([^.]+)$ cache/$1/index.html [QSA]
-
-    # END Page cache
 
     RewriteCond %{REQUEST_FILENAME} -s [OR]
     RewriteCond %{REQUEST_FILENAME} -l [OR]
@@ -48,4 +49,4 @@ How to
 
     RewriteRule ^.*$ - [NC,L]
     RewriteRule ^.*$ index.php [NC,L]   
-
+```
