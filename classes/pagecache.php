@@ -49,6 +49,11 @@ class Pagecache
     {
         \Config::load('fuel-pagecache', true);
         $this->_cache_dir = \Config::get('fuel-pagecache.cache_dir');
+
+        if (substr($this->_cache_dir, -1) == '/')
+        { 
+            $this->_cache_dir = substr($this->_cache_dir, 0, -1);
+        }         
     }
 
     /**
@@ -196,6 +201,17 @@ class Pagecache
     public function cleanup($expired = false)
     {
         $this->_cleanup($this->_cache_dir, $expired);
+    }
+
+    /**
+     * Method to delete a specific path
+     * Usage: 
+     * - cleanupDirectory('users/list');
+     * - cleanupDirectory('product/automatic-spam-checker');
+     */
+    public function cleanupDirectory($directory, $expired = false)
+    {
+        $this->_cleanup($this->_cache_dir . '/' . $directory, $expired);
     }
     
     /**
