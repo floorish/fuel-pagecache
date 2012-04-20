@@ -11,46 +11,26 @@ How to
 
 1. Enable the package in your fuel instance
 
-2. Create a 'cache' folder in your docroot
+2. Create a 'cache' folder in your docroot (or change config to update folder name)
 
-3. This is how Controller_Template should look like
+3. Add this code to the Controller_Template 'before' function:
 
-    public function before()
-    {
-        // let pagecache available to all controllers
-        $this->pagecache = new Pagecache();
-        $this->pagecache->setResponse($this->response);
-        $this->pagecache->setRequest($this->request);
+    $this->pagecache = new Pagecache();
+    $this->pagecache->setResponse($this->response);
+    $this->pagecache->setRequest($this->request);
 
-
-        if ($this->auto_render === true)
-        {            
-            $this->template = \View::forge($this->template);
-        }
-    }   
-	
-    public function after($response)
-    {
-        if ($this->auto_render === true and ! $response instanceof \Response)
-        {
-            $response = $this->response;
-            $response->body = $this->template;
-
-            // this snippet will do all the work
-            if ($this->pagecache->isCacheable()) {
-               $this->pagecache->cache($_SERVER['REQUEST_URI']);
-            }
-        }
-
-        return $response;
-    }  
+4. Add this code to the Controller_Template 'after' function:
+   (inside auto_render snippet)
     
-
-4. Enable cache in your controller
+    if ($this->pagecache->isCacheable()) {
+       $this->pagecache->cache($_SERVER['REQUEST_URI']);
+    }
+    
+5. Enable cache in your controller
 
 	$this->_pagecache->enableCache();
 
-3. Add to your .htaccess the following code
+6. Add to your .htaccess the following code
 
     # BEGIN Page cache
 
