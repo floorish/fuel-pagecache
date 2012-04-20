@@ -257,6 +257,10 @@ class Pagecache
         closedir($directory_handle);
     }    
 
+    /**
+     * Get the number of cached files stored in the filesystem
+     * @return integer
+     */
     public function getStats()
     {
         $directory = $this->_cache_dir;
@@ -268,6 +272,11 @@ class Pagecache
         return $file_count;
     }
 
+    /**
+     * Counts cached files recursively
+     * @param string $directory
+     * @param integer $file_count
+     */
     protected function _getStats($directory, &$file_count)
     {   
         if (substr($directory, -1) == '/')
