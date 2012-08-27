@@ -200,7 +200,7 @@ class Pagecache
      */
     public function cleanup($expired = false)
     {
-        $this->_cleanup($this->_cache_dir, $expired);
+        $this->_cleanup($this->_cache_dir, $expired, true);
     }
 
     /**
@@ -209,18 +209,19 @@ class Pagecache
      * - cleanupDirectory('users/list');
      * - cleanupDirectory('product/automatic-spam-checker');
      */
-    public function cleanupDirectory($directory, $expired = false)
+    public function cleanupDirectory($directory, $expired = false, $recursive = true )
     {
-        $this->_cleanup($this->_cache_dir . '/' . $directory, $expired);
+        $this->_cleanup($this->_cache_dir . '/' . $directory, $expired, $recursive);
     }
     
     /**
-     * Deletes files and directories recursively
+     * Deletes files (and directories if recursive parameter is true)
      * @param string $directory
      * @param integer|boolean $expired 
+     * @param boolean $recursive
      * @return  boolean
      */
-    protected function _cleanup($directory, $expired = false)
+    protected function _cleanup($directory, $expired = false, $recursive = true)
     {   
         if ($directory == '/')
         {
@@ -250,8 +251,11 @@ class Pagecache
                 // otherwise, remove the index file
                 if (is_dir($path))
                 { 
-                    self::_cleanup($path);                                         
-                    @rmdir($path);     
+                    if ($recursive)
+                    {
+                        self::_cleanup($path);                                         
+                        @rmdir($path);     
+                    }
                 } 
                 else 
                 {        
@@ -268,6 +272,11 @@ class Pagecache
                     }                
                 }
             } 
+        }
+
+        if ( $recursive )
+        {
+            $directory === $this->_cache_dir or @rmdir($directory);
         }
     
         closedir($directory_handle);
